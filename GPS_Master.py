@@ -1,5 +1,5 @@
 "Ceci est une ligne de test pour le fichier"
-prout
+print('prout')
 prout
 prout2
 test
