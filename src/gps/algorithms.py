@@ -7,5 +7,5 @@ Responsabilité :
 - Ne PAS stocker les données du graphe
 """
 
-testrzihbvsdw
-testsbvjbuvbcjzxKHCGVIYEJCSQL
+def test_dummy():
+    assert 1 + 1 == 2
