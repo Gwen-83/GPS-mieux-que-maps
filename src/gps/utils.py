@@ -6,3 +6,4 @@ Responsabilité :
 - Fonctions réutilisables
 - Aucun lien direct avec les algorithmes
 """
+feature utils test
