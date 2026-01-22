@@ -60,7 +60,14 @@ def trivoisines(voisines):
 voisines_test=[['A', 10],['B', 23],['C', 2], ['D', 42]]
 print(trivoisines(voisines_test))'''
 
+## premier test pour voir le format de chemin
+# 1. Fonction permettant de trier les villles dans la liste ville départ par rapport distance orthodromique
+# 2. Fonction permettant de connaitre la ville suivante la plus proche de la ville d'arrivée si destination pas dans voisines directes
+# 3. Calcul de la distance en fonction du parcours obtenu
+
 ## Trouver les 3 chemins les plus courts en distance orthodromique
+global dico
+dico={}
 def parcours_dist_orth(ville, villeA, chemin, tab_final):
     if villeA in maping[ville]:
         return chemin+[villeA]        
@@ -68,14 +75,19 @@ def parcours_dist_orth(ville, villeA, chemin, tab_final):
     for voisine in maping[ville] :
         if voisine not in chemin :
             voisines.append([voisine, distance_orthodromique(localisation_ville[voisine][0], localisation_ville[voisine][1], localisation_ville[villeA][0], localisation_ville[villeA][1])])
-        voisinestri=trivoisines(voisines)
+    voisinestri=trivoisines(voisines)
     for voisine in voisinestri :
-        res = parcours_dist_orth(voisine, villeA, chemin+[voisine], tab_final)
-        if villeA in res : return(res) # un chemin a été trouvé : remontée du résultat
+        res = parcours_dist_orth(voisine, villeA, chemin+[voisine])
+        if villeA in res:
+            dico['chemin1']=res
+            return(res) # un chemin a été trouvé : remontée du résultat
     return []
+print(parcours_dist_orth('Toulouse', 'Aussonne', ['Toulouse']))
+print(dico)
 
-## Calculer la distance réelle du chemin trouvé
-def calculer_distance_reelle(chemin):
+
+chemin_trouve=['Toulouse', 'Colomiers', 'Aussonne']
+def calculer_distance_reelle(chemin_trouve):
     distance_reelle_totale = 0
     for i in range(len(chemin_test) - 1):
         depart=chemin_test[i]
@@ -85,4 +97,3 @@ def calculer_distance_reelle(chemin):
         distance_reelle_totale += km
     return distance_reelle_totale
 
-print(calculer_distance_reelle(chemin_test))
