@@ -1,5 +1,9 @@
+import sys
+sys.stdout.reconfigure(encoding='utf-8')
+
 import heapq
 from typing import Dict, List, Tuple, Optional
+
 
 def dijkstra(graph: Dict[str, List[Tuple[str, int]]],
              start: str,
