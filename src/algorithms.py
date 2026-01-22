@@ -30,3 +30,18 @@ def distance_orthodromique(lat1, lng1, lat2, lng2) :
     return (6371000 * math.acos(v)) / 1000
 
 
+def triVillesParRapportVilleArrivée(voisines) :
+    voisinestriées = []
+    while len(voisines) > 0 :
+        if len(voisines) == 1 :
+            voisinestriées.append(voisines[0][0])
+            del voisines[0]
+        else :
+            imin=0; i=1
+            while i < len(voisines) :
+                if voisines[imin][1] > voisines[i][1] :
+                    imin = i
+                i += 1
+            voisinestriées.append(voisines[imin][0])
+            del voisines[imin]
+    return voisinestriées
