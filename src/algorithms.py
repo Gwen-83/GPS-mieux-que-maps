@@ -78,7 +78,7 @@ def parcours_dist_orth(ville, villeA, chemin):
         res = parcours_dist_orth(voisine, villeA, chemin+[voisine])
         if villeA in res:
             dico['chemin1']=res
-            return(res) # un chemin a été trouvé : remontée du résultat
+        return(res) # un chemin a été trouvé : remontée du résultat
     return []
 print(parcours_dist_orth('Toulouse', 'Aussonne', ['Toulouse']))
 print(dico)
