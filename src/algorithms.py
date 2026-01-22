@@ -60,7 +60,7 @@ def trivoisines(voisines):
 voisines_test=[['A', 10],['B', 23],['C', 2], ['D', 42]]
 print(trivoisines(voisines_test))'''
 
-
+## Trouver les 3 chemins les plus courts en distance orthodromique
 def parcours_dist_orth(ville, villeA, chemin, tab_final):
     if villeA in maping[ville]:
         return chemin+[villeA]        
