@@ -49,24 +49,24 @@ print(trivoisines(voisines_test))'''
 # 1. Fonction permettant de trier les villles dans la liste ville départ par rapport distance orthodromique
 # 2. Fonction permettant de connaitre la ville suivante la plus proche de la ville d'arrivée si destination pas dans voisines directes
 # 3. Calcul de la distance en fonction du parcours obtenu
-
-def parcours_dist_orth(ville, villeA, chemin, tab_final):
+global dico
+dico={}
+def parcours_dist_orth(ville, villeA, chemin):
     if villeA in maping[ville]:
-        print(chemin)
         return chemin+[villeA]        
     voisines=[]
     for voisine in maping[ville] :
         if voisine not in chemin :
             voisines.append([voisine, distance_orthodromique(localisation_ville[voisine][0], localisation_ville[voisine][1], localisation_ville[villeA][0], localisation_ville[villeA][1])])
-        voisinestri=trivoisines(voisines)
-        print(voisinestri)
+    voisinestri=trivoisines(voisines)
     for voisine in voisinestri :
-        res = parcours_dist_orth(voisine, villeA, chemin+[voisine], tab_final)
-        if villeA in res : return(res) # un chemin a été trouvé : remontée du résultat
+        res = parcours_dist_orth(voisine, villeA, chemin+[voisine])
+        if villeA in res:
+            dico['chemin1']=res
+            return(res) # un chemin a été trouvé : remontée du résultat
     return []
-
-
-print(parcours_dist_orth('Toulouse', 'Aussonne', ['Toulouse'], ['sdvsvsv']))
+print(parcours_dist_orth('Toulouse', 'Aussonne', ['Toulouse']))
+print(dico)
 
 
 chemin_trouve=['Toulouse', 'Colomiers', 'Aussonne']
@@ -80,4 +80,3 @@ def calculer_distance_reelle(chemin_trouve):
         distance_reelle_totale += km
     return distance_reelle_totale
 
-test
