@@ -68,7 +68,7 @@ print(trivoisines(voisines_test))'''
 ## Trouver les 3 chemins les plus courts en distance orthodromique
 global dico
 dico={}
-def parcours_dist_orth(ville, villeA, chemin, tab_final):
+def parcours_dist_orth(ville, villeA, chemin):
     if villeA in maping[ville]:
         return chemin+[villeA]        
     voisines=[]
@@ -80,7 +80,7 @@ def parcours_dist_orth(ville, villeA, chemin, tab_final):
         res = parcours_dist_orth(voisine, villeA, chemin+[voisine])
         if villeA in res:
             dico['chemin1']=res
-        return(res) # un chemin a été trouvé : remontée du résultat
+            return(res) # un chemin a été trouvé : remontée du résultat
     return []
 print(parcours_dist_orth('Toulouse', 'Aussonne', ['Toulouse']))
 print(dico)
