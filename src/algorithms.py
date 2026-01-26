@@ -1,6 +1,7 @@
 from map import maping
 from localisation import localisation_ville
 import math
+import numpy as np
 
 ## Fonctionnement de l'algo:
 #1. Entrée utilisateur : ville de départ, ville d'arrivée
@@ -109,4 +110,14 @@ def extract_temps(tab):
         villeD=ville
     return res                      #return le temps pour un chemin
 
-def tri_dico_temps(dico):
+def dico_temps(dico):
+    dico_res={}
+    chemin_res=np.linspace(0,len(dico), 1)
+    for cle in dico:
+        temps_res+=extract_temps(dico[cle])
+        for i in range (len(temps_res)):
+            if temps_res[i+1]<temps_res[i]:
+                temps_res[i], temps_res[i+1]=temps_res[i+1], temps_res[i]
+                chemin_res[i], chemin_res[i+1]=chemin_res[i+1], chemin_res[i]
+    return dico_res
+
