@@ -97,4 +97,5 @@ def calculer_distance_reelle(chemin_trouve):
         km=distance_pair[0]
         distance_reelle_totale += km
     return distance_reelle_totale
-print(calculer_distance_reelle(chemin_trouve))
+#print(calculer_distance_reelle(chemin_trouve))
+
