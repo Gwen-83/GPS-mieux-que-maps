@@ -14,10 +14,10 @@ warnings.filterwarnings("ignore")
 
 # ================= CONFIGURATION DES PARAMETRES =================
 
-CHEMIN_ROUTES = r"C:\Users\Gwénaël\OneDrive\Bureau\ENAC\Programmation\projet_GPS\src\data\gis_osm_roads_free_1.shp"
-VILLES_ADJACENTS = r"C:\Users\Gwénaël\OneDrive\Bureau\ENAC\Programmation\projet_GPS\src\data\adjacences_villes.json"
-CHEMIN_COORDS = r"C:\Users\Gwénaël\OneDrive\Bureau\ENAC\Programmation\projet_GPS\src\data\coords_villes.json"
-CHEMIN_SORTIE = r"C:\Users\Gwénaël\OneDrive\Bureau\ENAC\Programmation\projet_GPS\src\data\routes_villes_adj.json"
+CHEMIN_ROUTES = r"src\data\gis_osm_roads_free_1.shp"
+VILLES_ADJACENTS = r"src\data\adjacences_villes.json"
+CHEMIN_COORDS = r"src\data\coords_villes.json"
+CHEMIN_SORTIE = r"src\data\routes_villes_adj.json"
 
 VITESSE_DEFAULT = {
     "motorway": 130, 
@@ -186,7 +186,7 @@ def insert_projected_point_in_graph(G, tree, listes_noeud, arrete_infos, point_v
         neoud_projeté = listes_noeud[idx]
     else:
         neoud_projeté = coordonnées_projetes
-        
+
         geometrie_original = données_arretes['geometry']
         distance_afaire = geometrie_original.project(projection_point)
         liste_coordonnées = list(geometrie_original.coords)
@@ -383,7 +383,7 @@ if __name__ == "__main__":
 
         if not lien_succès:
             best_node, real_dist = meilleur_noeud_fallback(point_ville, arbre, liste_noeud_validé, G)
-            
+
             if best_node:
                 raccorde_ville_route(G, coords_villes, best_node, real_dist)
                 villes_raccordées[name] = {"node": coords_villes, "orig_data": coords_data[name]}
@@ -397,7 +397,7 @@ if __name__ == "__main__":
     for ville_nom, villes_voisines in tqdm(adj_data.items(), desc="Calcul Itinéraires"):
         if ville_nom not in villes_raccordées: 
             continue
-        
+
         noeud_départ = villes_raccordées[ville_nom]["node"]
         sortie[ville_nom] = {"coords": villes_raccordées[ville_nom]["orig_data"], "adjacents": []}
 
