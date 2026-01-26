@@ -14,10 +14,10 @@ warnings.filterwarnings("ignore")
 
 # ================= CONFIGURATION DES PARAMETRES =================
 
-CHEMIN_ROUTES = r"C:\Users\Gwénaël\OneDrive\Bureau\ENAC\Programmation\projet_GPS\src\data\gis_osm_roads_free_1.shp"
-VILLES_ADJACENTS = r"C:\Users\Gwénaël\OneDrive\Bureau\ENAC\Programmation\projet_GPS\src\data\adjacences_villes.json"
-CHEMIN_COORDS = r"C:\Users\Gwénaël\OneDrive\Bureau\ENAC\Programmation\projet_GPS\src\data\coords_villes.json"
-CHEMIN_SORTIE = r"C:\Users\Gwénaël\OneDrive\Bureau\ENAC\Programmation\projet_GPS\src\data\routes_villes_adj.json"
+CHEMIN_ROUTES = r"src\data\gis_osm_roads_free_1.shp"
+VILLES_ADJACENTS = r"src\data\adjacences_villes.json"
+CHEMIN_COORDS = r"src\data\coords_villes.json"
+CHEMIN_SORTIE = r"src\data\routes_villes_adj.json"
 
 VITESSE_DEFAULT = {
     "motorway": 130, 
@@ -44,6 +44,8 @@ VITESSE_DEFAULT = {
     "track_grade4": 5, 
     "track_grade5": 5
 }
+
+VITESSE_MAX_MS = max(VITESSE_DEFAULT.values()) / 3.6
 
 POSSIBILITE_RACCORDEMENTS = {
     "service": 1.0, 
@@ -84,6 +86,11 @@ def z_level(row):
     contient_tunnel = row.get("tunnel", "F") in ["T", "True", True]
     return 1 if contient_bridge else (-1 if contient_tunnel else 0)
 
+def temps_heuristique(u, v):
+    dx = u[0] - v[0]
+    dy = u[1] - v[1]
+    dist = math.hypot(dx, dy)
+    return dist / VITESSE_MAX_MS
 
 def construction_graph_routes(gdf_roads_projected): #Transforme le fichier de route en graph orienté avec distance et temps
     print("Préparation des arêtes")
@@ -186,7 +193,7 @@ def insert_projected_point_in_graph(G, tree, listes_noeud, arrete_infos, point_v
         neoud_projeté = listes_noeud[idx]
     else:
         neoud_projeté = coordonnées_projetes
-        
+
         geometrie_original = données_arretes['geometry']
         distance_afaire = geometrie_original.project(projection_point)
         liste_coordonnées = list(geometrie_original.coords)
@@ -383,7 +390,7 @@ if __name__ == "__main__":
 
         if not lien_succès:
             best_node, real_dist = meilleur_noeud_fallback(point_ville, arbre, liste_noeud_validé, G)
-            
+
             if best_node:
                 raccorde_ville_route(G, coords_villes, best_node, real_dist)
                 villes_raccordées[name] = {"node": coords_villes, "orig_data": coords_data[name]}
@@ -397,7 +404,7 @@ if __name__ == "__main__":
     for ville_nom, villes_voisines in tqdm(adj_data.items(), desc="Calcul Itinéraires"):
         if ville_nom not in villes_raccordées: 
             continue
-        
+
         noeud_départ = villes_raccordées[ville_nom]["node"]
         sortie[ville_nom] = {"coords": villes_raccordées[ville_nom]["orig_data"], "adjacents": []}
 
@@ -407,7 +414,15 @@ if __name__ == "__main__":
             neoud_fin = villes_raccordées[voisin_nom]["node"]
 
             try:
-                chemin_de_noeuds = nx.shortest_path(G, source=noeud_départ, target=neoud_fin, weight="time")
+                if point_ville.distance(Point(villes_gdf.loc[voisin_nom].geometry)) > 150000:
+                    continue
+                chemin_de_noeuds = nx.astar_path(
+                    G,
+                    source=noeud_départ,
+                    target=neoud_fin,
+                    heuristic=temps_heuristique,
+                    weight="time"
+                )
 
                 chemin_geom = []
                 total_dist, total_temps = 0, 0
