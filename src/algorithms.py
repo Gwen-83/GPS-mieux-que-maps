@@ -86,6 +86,7 @@ print(dico)
 
 
 
+
 chemin_trouve=['Toulouse', 'Colomiers', 'Aussonne']
 def calculer_distance_reelle(chemin_trouve):
     distance_reelle_totale = 0
@@ -97,3 +98,11 @@ def calculer_distance_reelle(chemin_trouve):
         distance_reelle_totale += km
     return distance_reelle_totale
 print(calculer_distance_reelle(chemin_trouve))
+
+def tris_distance_reelle(dico):
+    dico_res={}
+    for cle in dico:
+        res = calculer_distance_reelle(dico[cle])
+        dico_res[cle]=res
+    return dico_res
+print(tris_distance_reelle(dico))
