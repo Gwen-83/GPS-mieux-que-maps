@@ -7,16 +7,11 @@ import math
 #2. Vérification si ville d'arrivée dans les voisines directes de la ville de départ
 #3. Si non, trier les villes voisines en fonction de la distance orthodromique à la ville d'arrivée
 #4. Calcul des 3 chemins les plus courts en distance orthodromique et les sortirs sous le format:
-"""Chemin1[Toulouse, Colomiers, Tournefeuille, Aussonne]
-Chemin2[Toulouse, Blagnac, Aussonne]
-Chemin3[Toulouse, Colomiers, Aussonne]"""
 #5. Calcul de la distance réelle pour chaque chemin
 #6. Trie du plus court au plus long chemin en distance réelle 
 #7. Calcul du temps réelle pour chaque chemin (en prenant en compte la vitesse moyenne des routes entre chaque)
 #8. Trie du plus rapide au plus lent chemin en temps réelle
 #9. Affichage des résultats
-
-chemin_test = ['Toulouse', 'Blagnac', 'Aussonne']
 
 ## Calcul Othodromique entre 2 points
 def distance_orthodromique(lat1, lng1, lat2, lng2) :
@@ -85,25 +80,30 @@ def parcours_dist_orth(ville, villeA, chemin, dico):
     return(dico) # un chemin a été trouvé : remontée du résultat
 print(parcours_dist_orth('Toulouse', 'Aussonne', ['Toulouse'], dico))
 
-
-
-
-chemin_trouve=['Toulouse', 'Colomiers', 'Aussonne']
-def calculer_distance_reelle(chemin_trouve):
+def calculer_distance_reelle(dico):
     distance_reelle_totale = 0
-    for i in range(len(chemin_test) - 1):
-        depart=chemin_test[i]
-        arrivee=chemin_test[i+1]
+    for i in range(len(dico) - 1):
+        depart=dico[i]
+        arrivee=dico[i+1]
         distance_pair=maping[depart][arrivee]
         km=distance_pair[0]
         distance_reelle_totale += km
     return distance_reelle_totale
-print(calculer_distance_reelle(chemin_trouve))
+print(calculer_distance_reelle(['Toulouse', 'Tournefeuille', 'Colomiers', 'Aussonne']))
 
 def tris_distance_reelle(dico):
     dico_res={}
     for cle in dico:
         res = calculer_distance_reelle(dico[cle])
         dico_res[cle]=res
-    return dico_res
+    return dict(sorted(dico_res.items(), key=lambda item: item[1]))
 print(tris_distance_reelle(dico))
+
+def extract_temps(tab):
+    res=0
+    for ville in tab[1:]:
+        res+= maping[villeD][ville][3]
+        villeD=ville
+    return res                      #return le temps pour un chemin
+
+def tri_dico_temps(dico):
