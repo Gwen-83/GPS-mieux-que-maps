@@ -1,6 +1,17 @@
-from map import maping
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 from localisation import localisation_ville
+from map import maping
 import math
+
+'''
+insertion des données
+tri orthodromique (prioriser les villes étant les plus proches de la ville d'arrivée)
+calcul du parcours avec + petite distance (distances réelles entre les villes)
+définition du temps de parcours en fonction de la vitesse moyenne des routes utilisées (distance, type de route)
+tri et appel calcul parcours avec + petit temps
++ possibilité calcul cout (péages, carburant, etc.)'''
 
 ## Fonctionnement de l'algo:
 #1. Entrée utilisateur : ville de départ, ville d'arrivée
@@ -58,8 +69,9 @@ print(trivoisines(voisines_test))'''
 # 3. Calcul de la distance en fonction du parcours obtenu
 
 ## Trouver les 3 chemins les plus courts en distance orthodromique
+global dico
 dico={}
-def parcours_dist_orth(ville, villeA, chemin, dico):
+def parcours_dist_orth(ville, villeA, chemin):
     if villeA in maping[ville]:
         return chemin+[villeA]        
     voisines=[]
@@ -67,16 +79,14 @@ def parcours_dist_orth(ville, villeA, chemin, dico):
         if voisine not in chemin :
             voisines.append([voisine, distance_orthodromique(localisation_ville[voisine][0], localisation_ville[voisine][1], localisation_ville[villeA][0], localisation_ville[villeA][1])])
     voisinestri=trivoisines(voisines)
-    print(voisinestri)
     for voisine in voisinestri :
-        res = parcours_dist_orth(voisine, villeA, chemin+[voisine], dico)
+        res = parcours_dist_orth(voisine, villeA, chemin+[voisine])
         if villeA in res:
-            dico[voisine]=res
-    return(res) # un chemin a été trouvé : remontée du résultat
+            dico['chemin1']=res
+            return(res) # un chemin a été trouvé : remontée du résultat
     return []
-print(parcours_dist_orth('Toulouse', 'Aussonne', ['Toulouse'], dico))
+print(parcours_dist_orth('Toulouse', 'Aussonne', ['Toulouse']))
 print(dico)
-
 
 chemin_trouve=['Toulouse', 'Colomiers', 'Aussonne']
 def calculer_distance_reelle(chemin_trouve):
@@ -88,4 +98,3 @@ def calculer_distance_reelle(chemin_trouve):
         km=distance_pair[0]
         distance_reelle_totale += km
     return distance_reelle_totale
-print(calculer_distance_reelle(chemin_trouve))
