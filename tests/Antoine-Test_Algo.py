@@ -1,10 +1,6 @@
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
-from localisation import localisation_ville
 from map import maping
+from localisation import localisation_ville
 import math
-
 
 ## Fonctionnement de l'algo:
 #1. Entrée utilisateur : ville de départ, ville d'arrivée
@@ -19,8 +15,6 @@ Chemin3[Toulouse, Colomiers, Aussonne]"""
 #7. Calcul du temps réelle pour chaque chemin (en prenant en compte la vitesse moyenne des routes entre chaque)
 #8. Trie du plus rapide au plus lent chemin en temps réelle
 #9. Affichage des résultats
-
-chemin_test = ['Toulouse', 'Blagnac', 'Aussonne']
 
 ## Calcul Othodromique entre 2 points
 def distance_orthodromique(lat1, lng1, lat2, lng2) :
@@ -78,32 +72,32 @@ def parcours_dist_orth(ville, villeA, chemin, dico):
     for voisine in voisinestri[:4] :
         res = parcours_dist_orth(voisine, villeA, chemin+[voisine], dico)
         if villeA in res:
-            i+=1
-            dico[i]=res
             liste.append(res)
-            if type(dico[i]) == list:
-                dico[12]=res
-    return(liste) # un chemin a été trouvé : remontée du résultat
-    return []
-print(parcours_dist_orth('Toulouse', 'Aussonne', ['Toulouse'], dico))
-print(dico)
+            if len(dico)>1:
+                if type(dico[str(i)]) == list:
+                    dico[str(i+1)+'-bis']=res
+            else: 
+                dico[str(i)]=res
+            i+=1
 
-chemin_trouve=['Toulouse', 'Colomiers', 'Aussonne']
-def calculer_distance_reelle(chemin_trouve):
+    return(dico) # un chemin a été trouvé : remontée du résultat
+print(parcours_dist_orth('Toulouse', 'Aussonne', ['Toulouse'], dico))
+
+def calculer_distance_reelle(dico):
     distance_reelle_totale = 0
-    for i in range(len(chemin_test) - 1):
-        depart=chemin_test[i]
-        arrivee=chemin_test[i+1]
+    for i in range(len(dico) - 1):
+        depart=dico[i]
+        arrivee=dico[i+1]
         distance_pair=maping[depart][arrivee]
         km=distance_pair[0]
         distance_reelle_totale += km
     return distance_reelle_totale
-print(calculer_distance_reelle(chemin_trouve))
+print(calculer_distance_reelle(['Toulouse', 'Tournefeuille', 'Colomiers', 'Aussonne']))
 
 def tris_distance_reelle(dico):
     dico_res={}
     for cle in dico:
         res = calculer_distance_reelle(dico[cle])
         dico_res[cle]=res
-    return dico_res
+    return dict(sorted(dico_res.items(), key=lambda item: item[1]))
 print(tris_distance_reelle(dico))

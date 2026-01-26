@@ -99,5 +99,5 @@ def tris_distance_reelle(dico):
     for cle in dico:
         res = calculer_distance_reelle(dico[cle])
         dico_res[cle]=res
-    return dico_res
+    return dict(sorted(dico_res.items(), key=lambda item: item[1]))
 print(tris_distance_reelle(dico))
