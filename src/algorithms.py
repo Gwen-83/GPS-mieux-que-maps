@@ -98,3 +98,12 @@ def tris_distance_reelle(dico):
         dico_res[cle]=res
     return dict(sorted(dico_res.items(), key=lambda item: item[1]))
 print(tris_distance_reelle(dico))
+
+def extract_temps(tab):
+    res=0
+    for ville in tab[1:]:
+        res+= maping[villeD][ville][3]
+        villeD=ville
+    return res                      #return le temps pour un chemin
+
+def tri_dico_temps(dico):
