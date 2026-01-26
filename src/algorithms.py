@@ -72,12 +72,12 @@ def parcours_dist_orth(ville, villeA, chemin, dico):
         res = parcours_dist_orth(voisine, villeA, chemin+[voisine], dico)
         if villeA in res:
             dico[voisine]=res
-    return(dico) # un chemin a été trouvé : remontée du résultat
+    return(dico) # un chemin a été trouvé : remontée du résultat 
     return []
 print(parcours_dist_orth('Toulouse', 'Aussonne', ['Toulouse'], dico))
 print(dico)
 
-
+## Calcul de la distance réelle entre départ/destination
 chemin_trouve=['Toulouse', 'Colomiers', 'Aussonne']
 def calculer_distance_reelle(chemin_trouve):
     distance_reelle_totale = 0

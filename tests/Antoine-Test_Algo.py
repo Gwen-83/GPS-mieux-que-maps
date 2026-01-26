@@ -91,5 +91,15 @@ chemins_a_tester = {"Chemina": Chemina, "Cheminb": Cheminb, "Cheminc": Cheminc}
 for nom, chemin in chemins_a_tester.items():
     print(f"{nom} distance en km is {calculer_distance_reelle(chemin)}")
 
-def tri_distance_reelle(chemin):
-    
+def tri_distance_reelle(chemins):
+    resultats = []
+    for nom, parcours in chemins.items():
+        distance = calculer_distance_reelle(parcours)
+        if isinstance(distance, (int, float)):
+            resultats.append({"nom": nom, "chemin": parcours, "distance": distance})
+        else:
+            # Si le chemin est invalide (ex: "Introuvable"), on le met à la fin avec une distance infinie
+            resultats.append({"nom": nom, "chemin": parcours, "distance": float('inf'), "status": distance})
+    # Tri de la liste en fonction de la distance réelle
+    return sorted(resultats, key=lambda x: x['distance'])
+print(tri_distance_reelle(chemins_a_tester))
