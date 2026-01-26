@@ -1,25 +1,21 @@
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
-from localisation import localisation_ville
 from map import maping
+from localisation import localisation_ville
 import math
-
 
 ## Fonctionnement de l'algo:
 #1. Entrée utilisateur : ville de départ, ville d'arrivée
 #2. Vérification si ville d'arrivée dans les voisines directes de la ville de départ
 #3. Si non, trier les villes voisines en fonction de la distance orthodromique à la ville d'arrivée
 #4. Calcul des 3 chemins les plus courts en distance orthodromique et les sortirs sous le format:
-Chemina=["Toulouse", "Colomiers", "Tournefeuille", "Aussonne"]
-Cheminb=["Toulouse", "Blagnac", "Aussonne"]
-Cheminc=["Toulouse", "Colomiers", "Aussonne"]
+"""Chemin1[Toulouse, Colomiers, Tournefeuille, Aussonne]
+Chemin2[Toulouse, Blagnac, Aussonne]
+Chemin3[Toulouse, Colomiers, Aussonne]"""
 #5. Calcul de la distance réelle pour chaque chemin
 #6. Trie du plus court au plus long chemin en distance réelle 
 #7. Calcul du temps réelle pour chaque chemin (en prenant en compte la vitesse moyenne des routes entre chaque)
 #8. Trie du plus rapide au plus lent chemin en temps réelle
 #9. Affichage des résultats
-print("Statut: Lancement Algo")
+
 ## Calcul Othodromique entre 2 points
 def distance_orthodromique(lat1, lng1, lat2, lng2) :
     # angles en degrés
@@ -49,7 +45,10 @@ def trivoisines(voisines):
             voisinestriées.append(voisines[imin][0])
             del voisines[imin]
     return voisinestriées
-
+'''
+#Jeu de test
+voisines_test=[['A', 10],['B', 23],['C', 2], ['D', 42]]
+print(trivoisines(voisines_test))'''
 
 ## premier test pour voir le format de chemin
 # 1. Fonction permettant de trier les villles dans la liste ville départ par rapport distance orthodromique
@@ -57,9 +56,11 @@ def trivoisines(voisines):
 # 3. Calcul de la distance en fonction du parcours obtenu
 
 ## Trouver les 3 chemins les plus courts en distance orthodromique
-global dico
 dico={}
-def parcours_dist_orth(ville, villeA, chemin):
+liste = []
+
+def parcours_dist_orth(ville, villeA, chemin, dico):
+    i=0
     if villeA in maping[ville]:
         return chemin+[villeA]        
     voisines=[]
@@ -67,39 +68,36 @@ def parcours_dist_orth(ville, villeA, chemin):
         if voisine not in chemin :
             voisines.append([voisine, distance_orthodromique(localisation_ville[voisine][0], localisation_ville[voisine][1], localisation_ville[villeA][0], localisation_ville[villeA][1])])
     voisinestri=trivoisines(voisines)
-    for voisine in voisinestri :
-        res = parcours_dist_orth(voisine, villeA, chemin+[voisine])
+    print(voisinestri)
+    for voisine in voisinestri[:4] :
+        res = parcours_dist_orth(voisine, villeA, chemin+[voisine], dico)
         if villeA in res:
-            dico['chemin1']=res
-            return(res) # un chemin a été trouvé : remontée du résultat
-    return []
+            liste.append(res)
+            if len(dico)>1:
+                if type(dico[str(i)]) == list:
+                    dico[str(i+1)+'-bis']=res
+            else: 
+                dico[str(i)]=res
+            i+=1
 
-def calculer_distance_reelle(chemin):
+    return(dico) # un chemin a été trouvé : remontée du résultat
+print(parcours_dist_orth('Toulouse', 'Aussonne', ['Toulouse'], dico))
+
+def calculer_distance_reelle(dico):
     distance_reelle_totale = 0
-    for i in range(len(chemin) - 1):
-        depart=chemin[i]
-        arrivee=chemin[i+1]
-        if arrivee in maping[depart]:
-            distance_pair=maping[depart][arrivee]
-            km=distance_pair[0]
-            distance_reelle_totale += km
-        else:
-            return "Introuvable (route manquante)"
+    for i in range(len(dico) - 1):
+        depart=dico[i]
+        arrivee=dico[i+1]
+        distance_pair=maping[depart][arrivee]
+        km=distance_pair[0]
+        distance_reelle_totale += km
     return distance_reelle_totale
+print(calculer_distance_reelle(['Toulouse', 'Tournefeuille', 'Colomiers', 'Aussonne']))
 
-chemins_a_tester = {"Chemina": Chemina, "Cheminb": Cheminb, "Cheminc": Cheminc}
-for nom, chemin in chemins_a_tester.items():
-    print(f"{nom} distance en km is {calculer_distance_reelle(chemin)}")
-
-def tri_distance_reelle(chemins):
-    resultats = []
-    for nom, parcours in chemins.items():
-        distance = calculer_distance_reelle(parcours)
-        if isinstance(distance, (int, float)):
-            resultats.append({"nom": nom, "chemin": parcours, "distance": distance})
-        else:
-            # Si le chemin est invalide (ex: "Introuvable"), on le met à la fin avec une distance infinie
-            resultats.append({"nom": nom, "chemin": parcours, "distance": float('inf'), "status": distance})
-    # Tri de la liste en fonction de la distance réelle
-    return sorted(resultats, key=lambda x: x['distance'])
-print(tri_distance_reelle(chemins_a_tester))
+def tris_distance_reelle(dico):
+    dico_res={}
+    for cle in dico:
+        res = calculer_distance_reelle(dico[cle])
+        dico_res[cle]=res
+    return dict(sorted(dico_res.items(), key=lambda item: item[1]))
+print(tris_distance_reelle(dico))
