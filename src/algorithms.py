@@ -60,7 +60,9 @@ print(trivoisines(voisines_test))'''
 ## Trouver les 3 chemins les plus courts en distance orthodromique
 dico={}
 liste = []
+
 def parcours_dist_orth(ville, villeA, chemin, dico):
+    i=0
     if villeA in maping[ville]:
         return chemin+[villeA]        
     voisines=[]
@@ -69,15 +71,20 @@ def parcours_dist_orth(ville, villeA, chemin, dico):
             voisines.append([voisine, distance_orthodromique(localisation_ville[voisine][0], localisation_ville[voisine][1], localisation_ville[villeA][0], localisation_ville[villeA][1])])
     voisinestri=trivoisines(voisines)
     print(voisinestri)
-    for voisine in voisinestri[:2] :
+    for voisine in voisinestri[:4] :
         res = parcours_dist_orth(voisine, villeA, chemin+[voisine], dico)
         if villeA in res:
-            dico[voisine]=res
             liste.append(res)
+            if len(dico)>1:
+                if type(dico[str(i)]) == list:
+                    dico[str(i+1)+'-bis']=res
+            else: 
+                dico[str(i)]=res
+            i+=1
+
     return(dico) # un chemin a été trouvé : remontée du résultat
-    return []
 print(parcours_dist_orth('Toulouse', 'Aussonne', ['Toulouse'], dico))
-print(liste)
+
 
 
 
@@ -92,3 +99,11 @@ def calculer_distance_reelle(chemin_trouve):
         distance_reelle_totale += km
     return distance_reelle_totale
 print(calculer_distance_reelle(chemin_trouve))
+
+def tris_distance_reelle(dico):
+    dico_res={}
+    for cle in dico:
+        res = calculer_distance_reelle(dico[cle])
+        dico_res[cle]=res
+    return dico_res
+print(tris_distance_reelle(dico))
