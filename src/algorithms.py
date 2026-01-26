@@ -16,8 +16,6 @@ Chemin3[Toulouse, Colomiers, Aussonne]"""
 #8. Trie du plus rapide au plus lent chemin en temps réelle
 #9. Affichage des résultats
 
-chemin_test = ['Toulouse', 'Blagnac', 'Aussonne']
-
 ## Calcul Othodromique entre 2 points
 def distance_orthodromique(lat1, lng1, lat2, lng2) :
     # angles en degrés
@@ -85,20 +83,16 @@ def parcours_dist_orth(ville, villeA, chemin, dico):
     return(dico) # un chemin a été trouvé : remontée du résultat
 print(parcours_dist_orth('Toulouse', 'Aussonne', ['Toulouse'], dico))
 
-
-
-
-chemin_trouve=['Toulouse', 'Colomiers', 'Aussonne']
-def calculer_distance_reelle(chemin_trouve):
+def calculer_distance_reelle(dico):
     distance_reelle_totale = 0
-    for i in range(len(chemin_test) - 1):
-        depart=chemin_test[i]
-        arrivee=chemin_test[i+1]
+    for i in range(len(dico) - 1):
+        depart=dico[i]
+        arrivee=dico[i+1]
         distance_pair=maping[depart][arrivee]
         km=distance_pair[0]
         distance_reelle_totale += km
     return distance_reelle_totale
-print(calculer_distance_reelle(chemin_trouve))
+print(calculer_distance_reelle(['Toulouse', 'Tournefeuille', 'Colomiers', 'Aussonne']))
 
 def tris_distance_reelle(dico):
     dico_res={}
