@@ -81,6 +81,8 @@ def parcours_dist_orth(ville, villeA, chemin, dico):
     return(dico) # un chemin a été trouvé : remontée du résultat
 print(parcours_dist_orth('Toulouse', 'Aussonne', ['Toulouse'], dico))
 
+## Calcul des distances réelles avec le top 3 orthodromique
+
 def calculer_distance_reelle(tab):
     distance_reelle_totale = 0
     for i in range(len(dico) - 1):
@@ -91,6 +93,8 @@ def calculer_distance_reelle(tab):
         distance_reelle_totale += km
     return distance_reelle_totale
 print(calculer_distance_reelle(['Toulouse', 'Tournefeuille', 'Colomiers', 'Aussonne']))
+
+## Tri du top 3 distances réelles dans l'ordre croissant
 
 def tris_distance_reelle(dico):
     dico_res={}
@@ -107,19 +111,27 @@ def extract_temps(tab):
         res+= maping[villeD][ville][3]
         villeD=ville
     return res                      #return le temps pour un chemin
-print((np.linspace(1,10, 10).tolist()))
-print(np.linspace(0,len(dico), len(dico)-1))
+k=np.linspace(1,10, 10).tolist()
+k[1], k[0]=k[0], k[1]
+print(k)
+chemin_res=np.linspace(0,len(dico)-1, len(dico))
 def dico_temps(dico):
     dico_res={}
     temps_res=[]
-    chemin_res=np.linspace(0,len(dico)-1, len(dico)-1)
+    chemin_res=np.linspace(0,len(dico)-1, len(dico))
+    chemin_res=np.int_(chemin_res)
     print(chemin_res)
     for cle in dico:
         temps_res+=[extract_temps(dico[cle])]
-        for i in range (len(temps_res)-1):
+        print(temps_res)
+        for i in range (0,len(temps_res)-1):
             if temps_res[i+1]<temps_res[i]:
                 temps_res[i], temps_res[i+1]=temps_res[i+1], temps_res[i]
                 chemin_res[i], chemin_res[i+1]=chemin_res[i+1], chemin_res[i]
+            dico_res[chemin_res[i]]=temps_res[i]
     return dico_res
 
 #print(dico_temps(dico))
+
+## Formulation des données sorties sous format {Chemin}:[Distance_réelle],[Temps réel],[Booléen autoroute]
+
