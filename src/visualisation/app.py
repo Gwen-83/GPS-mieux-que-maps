@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, jsonify
-import algo_a_star
 
 app = Flask(__name__)
 
