@@ -138,8 +138,6 @@ def dico_temps(dico):
 
 ## Formulation des données sorties sous format sortie_formalisée=[{Chemin:[chemin]:[Distance_réelle],[Temps réel],[Booléen autoroute]}]
 
-
-
 def formalisation_donnees(chemin,distance,temps):
     sortie_formalisee = []
     for id_chemin in chemin:
