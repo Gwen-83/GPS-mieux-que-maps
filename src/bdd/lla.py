@@ -1,7 +1,7 @@
 import geopandas as gpd
 import json
 
-path_source = r"C:\Users\Gwénaël\OneDrive\Bureau\ENAC\Programmation\projet_GPS\src\data\places_filtres.shp"
+path_source = r"src\data\places_filtres.shp"
 gdf = gpd.read_file(path_source)
 
 coords_dictionnaire = {}
