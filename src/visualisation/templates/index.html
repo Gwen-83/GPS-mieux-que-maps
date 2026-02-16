@@ -2,25 +2,43 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>GPS du touriste - Calculateur d'Itinéraires</title>
+    <meta name="theme-color" content="#0f0f1e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75'>🗺️</text></svg>">
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/easter-eggs.css') }}"></head>
 <body>
 
 <div class="app-container">
     <div class="sidebar">
         <div class="sidebar-header">
-            <div class="logo">
-                <i class="fas fa-map-marker-alt"></i>
-                <h1>GPS du touriste</h1>
+            <div class="header-top">
+                <div class="logo">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <div>
+                        <h1>GPS du touriste</h1>
+                        <p class="tagline">Trouvez votre chemin</p>
+                    </div>
+                </div>
+                <div class="header-controls">
+                    <button id="btn-theme" class="icon-btn" title="Changer de thème" aria-label="Thème">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <button id="btn-history" class="icon-btn" title="Historique" aria-label="Historique">
+                        <i class="fas fa-history"></i>
+                    </button>
+                    <button id="btn-menu" class="icon-btn menu-btn" title="Menu" aria-label="Menu">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
             </div>
-            <p class="tagline">Trouvez votre chemin</p>
         </div>
 
         <div class="form-section">
@@ -36,6 +54,9 @@
                         autocomplete="off"
                     >
                     <i class="fas fa-search input-icon"></i>
+                    <button id="btn-geoloc" class="geoloc-btn" title="Utiliser ma position" aria-label="Géolocalisation">
+                        <i class="fas fa-crosshairs"></i>
+                    </button>
                 </div>
                 <input type="hidden" id="depart_id">
                 <div id="depart_status" class="status-message"></div>
@@ -68,13 +89,21 @@
 
             <button id="btn-calcul" class="calculate-btn">
                 <i class="fas fa-route"></i>
-                <span>Calculer l'itinéraire</span>
+                <span>Calculer</span>
             </button>
         </div>
 
         <div id="resultats" class="results-section" style="display: none;">
             <div class="results-header">
                 <h3><i class="fas fa-chart-bar"></i> Résultats</h3>
+                <div class="results-header-btns">
+                    <button id="btn-favorite" class="share-btn" title="Ajouter aux favoris">
+                        <i class="fas fa-star"></i>
+                    </button>
+                    <button id="btn-share" class="share-btn" title="Partager">
+                        <i class="fas fa-share-alt"></i>
+                    </button>
+                </div>
             </div>
             
             <div class="result-cards">
@@ -86,7 +115,7 @@
                         <span class="card-label">Distance</span>
                         <span id="res_dist" class="card-value">-</span>
                         <span id="highway-indicator" class="highway-indicator" style="display: none;">
-                            <i class="fas fa-highway"></i> Autoroute incluse
+                            <i class="fas fa-highway"></i> Autoroute
                         </span>
                     </div>
                 </div>
@@ -96,15 +125,159 @@
                         <i class="fas fa-hourglass-end"></i>
                     </div>
                     <div class="card-content">
-                        <span class="card-label">Temps estimé</span>
+                        <span class="card-label">Temps</span>
                         <span id="res_temps" class="card-value">-</span>
+                    </div>
+                </div>
+
+                <div class="result-card">
+                    <div class="card-icon cost">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="cost-row">
+                            <span class="card-label">Coût estimé</span>
+                            <span id="res_cout" class="card-value">-</span>
+                        </div>
+                        <div class="co2-row">
+                            <span class="card-label">CO2 émis</span>
+                            <span id="res_co2" class="card-value">-</span>
+                        </div>
+                        <span class="cost-note">(~1.60€/L; 6L/100km; 2.3kg/L)</span>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="sidebar-footer">
-            <p>🗺️ Calcul optimal d'itinéraires avec A*</p>
+            <p>🗺️ Calcul optimal avec A*</p>
+        </div>
+    </div>
+
+    <!-- Menu latéral / Modals -->
+    <div id="menu-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Menu</h2>
+                <button class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <button class="menu-item" id="btn-favorites">
+                    <i class="fas fa-star"></i>
+                    <span>Favoris</span>
+                </button>
+                <button class="menu-item" id="btn-settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Paramètres</span>
+                </button>
+                <button class="menu-item" id="btn-about">
+                    <i class="fas fa-info-circle"></i>
+                    <span>À propos</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Historique -->
+    <div id="history-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>Historique</h2>
+                <button class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="history-list" class="history-list">
+                    <p class="empty-state">Aucun trajet dans l'historique</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Favoris -->
+    <div id="favorites-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>Trajets Favoris</h2>
+                <button class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="favorites-list" class="favorites-list">
+                    <p class="empty-state">Aucun trajet en favoris</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Paramètres -->
+    <div id="settings-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Paramètres</h2>
+                <button class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-group">
+                    <h4>Données Stockées</h4>
+                    <button class="menu-item" onclick="mobileFeatures.clearHistory()">
+                        <i class="fas fa-trash"></i>
+                        <span>Effacer l'historique</span>
+                    </button>
+                    <button class="menu-item" onclick="mobileFeatures.clearFavorites()">
+                        <i class="fas fa-trash"></i>
+                        <span>Effacer les favoris</span>
+                    </button>
+                </div>
+                
+                <div class="settings-group">
+                    <h4>À Propos de l'App</h4>
+                    <p class="setting-info">Version: 2.0.0</p>
+                    <p class="setting-info">Calcul optimal avec A*</p>
+                    <p class="setting-info">Cartes: OpenStreetMap</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal À Propos -->
+    <div id="about-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>À Propos</h2>
+                <button class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="about-content">
+                    <h3>🗺️ GPS du Touriste</h3>
+                    <p class="about-tagline">Trouvez votre chemin</p>
+                    
+                    <div class="about-section">
+                        <h4>Description</h4>
+                        <p>Calculez les itinéraires optimaux entre les villes avec l'algorithme A*.</p>
+                        <p>Interface mobile-friendly avec historique et favoris intégrés.</p>
+                    </div>
+                    
+                    <div class="about-section">
+                        <h4>Fonctionnalités</h4>
+                        <ul style="padding-left: 16px;">
+                            <li>📱 Calcul d'itinéraires optimisés</li>
+                            <li>📍 Historique des trajets</li>
+                            <li>⭐ Sauvegarde en favoris</li>
+                            <li>📤 Partage rapide</li>
+                            <li>🗺️ Carte interactive</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="about-section">
+                        <h4>Technologies</h4>
+                        <p>Leaflet • OpenStreetMap • Flask • A* Algorithm</p>
+                    </div>
+                    
+                    <div class="about-section">
+                        <h4>Version</h4>
+                        <p>v2.0.0 - Mobile Improvements</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -129,6 +302,7 @@
 <script src="{{ url_for('static', filename='js/easter-eggs/montauban.js') }}"></script>
 <script src="{{ url_for('static', filename='js/easter-eggs/double-click.js') }}"></script>
 
+<script src="{{ url_for('static', filename='js/mobile-features.js') }}"></script>
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 
 </body>

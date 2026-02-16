@@ -49,6 +49,10 @@ function initEventListeners() {
 
     document.getElementById('btn-swap').addEventListener('click', inverserTrajet);
 
+    document.getElementById('btn-theme').addEventListener('click', toggleTheme);
+
+    document.getElementById('btn-geoloc').addEventListener('click', getUserLocation);
+
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             fermerSuggestions();
@@ -64,11 +68,10 @@ function initEventListeners() {
 
 async function loadVillesData() {
     try {
-        const response = await fetch('/api/recherche_ville', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nom: '' })
-        });
+        const response = await fetch('/static/coords_villes.json');
+        const villes = await response.json();
+        state.villes = villes;
+        console.log(`Villes chargées: ${Object.keys(villes).length}`);
     } catch (error) {
         console.error('Erreur lors du chargement des villes:', error);
     }
@@ -240,8 +243,23 @@ async function lancerCalcul() {
 
 function afficherResultats(itineraire) {
     const resultatsDiv = document.getElementById('resultats');
+    const depart = document.getElementById('depart_input').value;
+    const arrivee = document.getElementById('arrivee_input').value;
+    
     document.getElementById('res_dist').textContent = `${itineraire.distance.toFixed(1)} km`;
     document.getElementById('res_temps').textContent = itineraire.temps_formate;
+    
+    // Calcul du coût estimé (1.60€/L, 6L/100km)
+    const consommation = 6; // L/100km
+    const prixLitre = 1.60; // €
+    const litres = (itineraire.distance / 100) * consommation;
+    const cout = litres * prixLitre;
+    document.getElementById('res_cout').textContent = `${cout.toFixed(2)} €`;
+    
+    // Calcul des émissions CO2 (2.3 kg/L)
+    const co2ParLitre = 2.3; // kg CO2/L
+    const co2 = litres * co2ParLitre;
+    document.getElementById('res_co2').textContent = `${co2.toFixed(1)} kg`;
     
     // Détecter s'il y a une autoroute dans le trajet
     const hasHighway = (itineraire.routes || []).some(route => route.autoroute);
@@ -259,6 +277,12 @@ function afficherResultats(itineraire) {
     }
     
     resultatsDiv.style.display = 'block';
+    
+    // Ajouter à l'historique
+    if (mobileFeatures) {
+        mobileFeatures.addToHistory(depart, arrivee, itineraire.distance.toFixed(1), itineraire.temps_formate);
+    }
+    
     tracerChemin(itineraire);
 }
 
@@ -391,3 +415,85 @@ function formatTime(minutes) {
         return '0 min';
     }
 }
+function toggleTheme() {
+    const body = document.body;
+    const themeBtn = document.getElementById('btn-theme');
+    const icon = themeBtn.querySelector('i');
+    
+    if (body.classList.contains('light-theme')) {
+        body.classList.remove('light-theme');
+        icon.classList.remove('fa-sun');
+        icon.classList.add('fa-moon');
+        localStorage.setItem('theme', 'dark');
+    } else {
+        body.classList.add('light-theme');
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
+        localStorage.setItem('theme', 'light');
+    }
+}
+
+function getUserLocation() {
+    const btn = document.getElementById('btn-geoloc');
+    const icon = btn.querySelector('i');
+    const originalIcon = icon.className;
+    
+    if (!navigator.geolocation) {
+        showToast('Géolocalisation non supportée', 'error');
+        return;
+    }
+    
+    icon.className = 'fas fa-spinner fa-spin';
+    btn.disabled = true;
+    
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const { latitude, longitude } = position.coords;
+            findNearestCity(latitude, longitude);
+            icon.className = originalIcon;
+            btn.disabled = false;
+        },
+        (error) => {
+            console.error('Erreur géolocalisation:', error);
+            showToast('Erreur de géolocalisation', 'error');
+            icon.className = originalIcon;
+            btn.disabled = false;
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+    );
+}
+
+function findNearestCity(lat, lon) {
+    let nearestCity = null;
+    let minDistance = Infinity;
+    
+    for (const [id, city] of Object.entries(state.villes)) {
+        const distance = Math.sqrt(
+            Math.pow(city.lat - lat, 2) + Math.pow(city.lon - lon, 2)
+        );
+        if (distance < minDistance) {
+            minDistance = distance;
+            nearestCity = { id, ...city };
+        }
+    }
+    
+    if (nearestCity) {
+        document.getElementById('depart_input').value = nearestCity.nom_affichage || nearestCity.nom;
+        document.getElementById('depart_id').value = nearestCity.id;
+        document.getElementById('depart_status').innerHTML = "<span style='color: #27ae60;'>✅ Position détectée</span>";
+        showToast(`Ville la plus proche: ${nearestCity.nom_affichage || nearestCity.nom}`, 'success');
+    } else {
+        showToast('Aucune ville trouvée', 'error');
+    }
+}
+
+// Charger le thème au démarrage
+document.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+        document.body.classList.add('light-theme');
+        const icon = document.getElementById('btn-theme').querySelector('i');
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
+    }
+});

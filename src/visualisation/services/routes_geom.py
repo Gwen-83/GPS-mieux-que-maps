@@ -3,7 +3,7 @@ import sqlite3
 import json
 
 CURRENT_DIR = Path(__file__).parent  # src/visualisation/services
-DB_FILE = CURRENT_DIR.parent / "ma_base.db"  # remonte à src/visualisation
+DB_FILE = CURRENT_DIR.parent.parent / "data" / "sqlite" / "routes.db"  # remonte correctement jusqu'à src/data/sqlite
 print("DB_FILE =", DB_FILE)
 
 def extraire_infos_itineraire(liste_villes):

@@ -7,10 +7,10 @@ gdf = gpd.read_file(origine)
 coords_dictionnaire = {}
 
 for _, ligne in gdf.iterrows():
-    if 'unique_nm' in ligne:
+    if 'unique_nm' in ligne and ligne['unique_nm']:
         id_ville = ligne['unique_nm']
-    else :
-        f"{ligne['name']}_{ligne['osm_id']}"
+    else:
+        id_ville = f"{ligne['name']}_{ligne['osm_id']}"
     
     coords_dictionnaire[id_ville] = {
         "nom_affichage": ligne['name'],
