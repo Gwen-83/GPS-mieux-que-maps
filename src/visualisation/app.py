@@ -4,7 +4,6 @@ import json
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 
-# --- CHEMINS ---
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 SRC_DIR = os.path.dirname(CURRENT_DIR)
 

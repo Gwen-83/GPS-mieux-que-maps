@@ -50,7 +50,6 @@ body {
     line-height: 1.6;
 }
 
-/* ========== MOBILE FIRST LAYOUT ========== */
 .app-container {
     display: flex;
     flex-direction: column;
@@ -113,7 +112,7 @@ body {
 }
 
 .sidebar-toggle-btn {
-    display: none; /* Hidden by default, shown only on mobile */
+    display: none;
 }
 
 .header-top {
@@ -721,7 +720,6 @@ body {
     }
 }
 
-/* ========== MODALS ========== */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -914,7 +912,6 @@ body {
     transform: scale(0.85);
 }
 
-/* ========== FORMULAIRE FAVORIS ========== */
 .favorite-form {
     display: flex;
     flex-direction: column;
@@ -1011,8 +1008,6 @@ body {
     background: var(--primary-dark);
 }
 
-/* ========== PARAMÈTRES & À PROPOS ========== */
-
 .settings-group {
     margin-bottom: 20px;
     padding-bottom: 16px;
@@ -1091,7 +1086,6 @@ body {
     line-height: 1.5;
 }
 
-/* ========== DESKTOP LAYOUT (Tablet+) ========== */
 @media (min-width: 768px) {
     .app-container {
         flex-direction: row;
@@ -1104,7 +1098,6 @@ body {
         border-bottom: none;
     }
 
-    /* Cacher le trajet minimisé sur desktop */
     .sidebar.minimized .minimized-route {
         display: none !important;
     }
@@ -1969,7 +1962,6 @@ body {
     transform: scale(1.05);
 }
 
-/* Vache 3D */
 .rodez-cow-3d {
     position: fixed;
     bottom: 20px;
@@ -2007,7 +1999,6 @@ body {
     75% { transform: translateY(-8px) rotate(1deg); }
 }
 
-/* Animation du fromage qui flotte */
 @keyframes float {
     0%, 100% {
         transform: translateY(0px);
@@ -2453,20 +2444,19 @@ body {
     transform: scale(0.95) rotate(90deg);
 }
 
-/* ========== MOBILE OPTIMIZATIONS ========== */
 @media (max-width: 768px) {
     .sidebar {
-        height: 60vh; /* Hauteur par défaut */
+        height: 60vh;
         transition: height 0.3s ease;
     }
 
     .sidebar.minimized {
-        height: 60px; /* Hauteur minimisée */
+        height: 60px;
     }
 
     .sidebar-header {
         position: relative;
-        padding-right: 40px; /* Espace pour le bouton */
+        padding-right: 40px;
     }
 
     .sidebar-toggle-btn {
@@ -2495,15 +2485,15 @@ body {
     .sidebar-toggle-btn i {
         font-size: 12px;
         transition: transform 0.3s ease;
-        transform: rotate(0deg); /* Pointe vers le bas par défaut (pour agrandir) */
+        transform: rotate(0deg);
     }
 
     .sidebar.minimized .sidebar-toggle-btn i {
-        transform: rotate(0deg); /* Pointe vers le bas quand minimisé (pour agrandir) */
+        transform: rotate(0deg);
     }
 
     .sidebar:not(.minimized) .sidebar-toggle-btn i {
-        transform: rotate(180deg); /* Pointe vers le haut quand étendu (pour réduire) */
+        transform: rotate(180deg);
     }
 
     .sidebar.minimized .minimized-route {
@@ -2536,20 +2526,20 @@ body {
     }
 
     .logo h1 {
-        font-size: 14px; /* Titre plus petit */
+        font-size: 14px;
     }
 
     .tagline {
-        font-size: 9px; /* Tagline plus petite */
+        font-size: 9px;
     }
 
     .form-section {
-        padding: 8px; /* Padding réduit */
-        gap: 8px; /* Gap réduit */
+        padding: 8px;
+        gap: 8px;
     }
 
     .input-group label {
-        font-size: 10px; /* Label plus petit */
+        font-size: 10px;
     }
 
     .input-wrapper {
@@ -2557,48 +2547,48 @@ body {
     }
 
     .input-wrapper input {
-        font-size: 14px; /* Input plus petit */
-        padding: 8px 35px 8px 12px; /* Padding ajusté */
+        font-size: 14px;
+        padding: 8px 35px 8px 12px;
     }
 
     .input-icon {
-        font-size: 12px; /* Icône plus petite */
-        right: 8px; /* Position ajustée */
+        font-size: 12px;
+        right: 8px;
     }
 
     .swap-btn-container {
-        margin: 4px 0; /* Marge réduite */
+        margin: 4px 0;
     }
 
     .calculate-btn {
-        padding: 10px; /* Bouton plus compact */
+        padding: 10px;
         font-size: 14px;
     }
 
     .results-section {
-        padding: 8px; /* Padding réduit */
+        padding: 8px;
     }
 
     .result-cards {
-        gap: 6px; /* Gap encore plus réduit pour 3 cartes */
+        gap: 6px;
     }
 
     .result-card {
-        padding: 6px; /* Padding réduit */
+        padding: 6px;
     }
 
     .card-icon {
-        width: 32px; /* Icônes plus petites */
+        width: 32px;
         height: 32px;
         font-size: 16px;
     }
 
     .card-value {
-        font-size: 12px; /* Valeur plus petite */
+        font-size: 12px;
     }
 
     .cost-note {
-        font-size: 8px; /* Note plus petite */
+        font-size: 8px;
     }
 
     .cost-row, .co2-row {
@@ -2611,43 +2601,42 @@ body {
     }
 
     .sidebar-footer {
-        padding: 8px; /* Footer plus compact */
+        padding: 8px;
         font-size: 10px;
     }
 
-    /* Modals plus compacts */
     .modal-content {
-        margin: 10px; /* Marge réduite */
-        max-height: 80vh; /* Hauteur max */
+        margin: 10px; 
+        max-height: 80vh; 
     }
 
     .modal-header h2 {
-        font-size: 16px; /* Titre modal plus petit */
+        font-size: 16px;
     }
 
     .modal-body {
-        padding: 12px; /* Padding réduit */
+        padding: 12px;
     }
 
     .menu-item {
-        padding: 10px; /* Items menu plus compacts */
+        padding: 10px;
         font-size: 14px;
     }
 
     .history-item, .favorite-item {
-        padding: 8px; /* Items plus compacts */
+        padding: 8px;
     }
 
     .history-item-route {
-        font-size: 14px; /* Route plus petite */
+        font-size: 14px;
     }
 
     .history-item-info {
-        font-size: 12px; /* Info plus petite */
+        font-size: 12px;
     }
 
     .small-btn {
-        width: 28px; /* Boutons plus petits */
+        width: 28px;
         height: 28px;
         font-size: 12px;
     }
