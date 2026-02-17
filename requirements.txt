@@ -10,3 +10,4 @@ pandas
 geopandas
 gdown
 flask
+flask_cors
