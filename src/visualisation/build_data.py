@@ -5,7 +5,7 @@ import gdown
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 files_to_download = {
-    "ma_base.db": "1OzMLienVlDaFdBMMIDnMHRajlbuZtXtE",
+    "ma_base.db": "1tdCOdYdF5QchCr95P8o6HQJ2MuTQEDBJ",
     "dico_final.json": "1NXsjXBL0Swzi3neALMYhbV0WVevtUclz",
     "routes_ville_adj.json": "1HtQlshnmTJqQNsqez6PlL-kCjS634T_q",
     "coords_villes.json": "1iO1zhnZjA1awWil7RSJzx3DpsOZuD9LT"
