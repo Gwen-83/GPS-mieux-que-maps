@@ -109,6 +109,10 @@ body {
     flex-shrink: 0;
 }
 
+.sidebar-toggle-btn {
+    display: none; /* Hidden by default, shown only on mobile */
+}
+
 .header-top {
     display: flex;
     justify-content: space-between;
@@ -465,18 +469,20 @@ body {
 }
 
 .share-btn {
-    width: 32px;
+    min-width: 32px;
     height: 32px;
     background: var(--primary-color);
     color: white;
     border: none;
-    border-radius: 50%;
+    border-radius: 6px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 12px;
+    padding: 0 8px;
     transition: var(--transition);
+    white-space: nowrap;
 }
 
 .share-btn:active {
@@ -727,6 +733,17 @@ body {
     animation: fadeIn 0.3s ease-out;
 }
 
+.modal-overlay.centered {
+    align-items: center;
+}
+
+.modal-overlay.centered .modal-content {
+    border-radius: 16px;
+    max-width: 400px;
+    width: 90%;
+    max-height: 80vh;
+}
+
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -894,6 +911,103 @@ body {
     transform: scale(0.85);
 }
 
+/* ========== FORMULAIRE FAVORIS ========== */
+.favorite-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.route-preview {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.route-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.route-info i {
+    color: var(--primary-color);
+}
+
+.route-details {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.favorite-form .input-group {
+    margin: 0;
+}
+
+.favorite-form .input-group label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.favorite-form input {
+    width: 100%;
+    padding: 10px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.favorite-form input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.modal-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.btn-secondary, .btn-primary {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:active {
+    background: var(--border-color);
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:active {
+    background: var(--primary-dark);
+}
+
 /* ========== PARAMÈTRES & À PROPOS ========== */
 
 .settings-group {
@@ -985,6 +1099,11 @@ body {
         max-height: 100%;
         border-right: 1px solid var(--border-color);
         border-bottom: none;
+    }
+
+    /* Cacher le trajet minimisé sur desktop */
+    .sidebar.minimized .minimized-route {
+        display: none !important;
     }
 
     .sidebar-header {
@@ -2334,11 +2453,83 @@ body {
 /* ========== MOBILE OPTIMIZATIONS ========== */
 @media (max-width: 768px) {
     .sidebar {
-        max-height: 40vh; /* Réduire la hauteur pour plus d'espace carte */
+        height: 60vh; /* Hauteur par défaut */
+        transition: height 0.3s ease;
+    }
+
+    .sidebar.minimized {
+        height: 60px; /* Hauteur minimisée */
     }
 
     .sidebar-header {
-        padding: 12px; /* Réduire padding */
+        position: relative;
+        padding-right: 40px; /* Espace pour le bouton */
+    }
+
+    .sidebar-toggle-btn {
+        position: absolute;
+        top: 50%;
+        right: 12px;
+        transform: translateY(-50%);
+        width: 24px;
+        height: 24px;
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+    }
+
+    .sidebar-toggle-btn:hover {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+    }
+
+    .sidebar-toggle-btn i {
+        font-size: 12px;
+        transition: transform 0.3s ease;
+        transform: rotate(0deg); /* Pointe vers le bas par défaut (pour agrandir) */
+    }
+
+    .sidebar.minimized .sidebar-toggle-btn i {
+        transform: rotate(0deg); /* Pointe vers le bas quand minimisé (pour agrandir) */
+    }
+
+    .sidebar:not(.minimized) .sidebar-toggle-btn i {
+        transform: rotate(180deg); /* Pointe vers le haut quand étendu (pour réduire) */
+    }
+
+    .sidebar.minimized .minimized-route {
+        display: block;
+    }
+
+    .minimized-route {
+        display: none;
+        font-size: 12px;
+        color: var(--text-secondary);
+        flex: 1;
+        text-align: center;
+        margin: 0 10px;
+    }
+
+    .minimized-route i {
+        margin: 0 4px;
+        color: var(--primary-color);
+        font-size: 10px;
+    }
+
+    .form-section {
+        padding: 0 12px 12px 12px;
+    }
+
+    .results-section {
+        padding: 8px 12px;
+        max-height: 200px;
+        overflow-y: auto;
     }
 
     .logo h1 {
