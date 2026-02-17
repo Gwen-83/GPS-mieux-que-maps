@@ -16,4 +16,4 @@ if os.path.exists(PATH_LOCALISATION):
     print("✅ maping chargé avec succès.")
 else:
     print(f"❌ ERREUR : Fichier introuvable à l'emplacement : {PATH_LOCALISATION}")
-    maping = {}
+    localisation_ville = {}
