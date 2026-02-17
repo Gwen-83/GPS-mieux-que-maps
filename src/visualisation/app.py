@@ -1,10 +1,16 @@
 import sys
 import os
 import json
-import math
-import gdown
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
+
+# --- CHEMINS ---
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+SRC_DIR = os.path.dirname(CURRENT_DIR)
+
+for path in [CURRENT_DIR, SRC_DIR]:
+    if path not in sys.path:
+        sys.path.insert(0, path)
 
 try:
     from algorithms import calculer_itineraire
