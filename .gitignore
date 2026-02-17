@@ -12,3 +12,5 @@ __pycache__/
 /src/lien_file.py
 *.db
 *.db-journal
+*.part
+*.json
