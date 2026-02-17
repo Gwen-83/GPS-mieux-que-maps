@@ -731,7 +731,6 @@ if __name__ == "__main__":
                 "adjacents": []
             })
 
-            # éviter les doublons
             noms_existants = {a["nom"] for a in sortie[voisin]["adjacents"]}
 
             if ville not in noms_existants:
