@@ -36,9 +36,11 @@ function initMap() {
         maxZoom: 20,
         minZoom: 6,
         errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
-        keepBuffer: 2,
-        updateWhenIdle: false,
-        updateInterval: 50
+        keepBuffer: 5,
+        updateWhenIdle: true,
+        updateInterval: 50,
+        noWrap: true,
+        bounds: [[-85,-180],[85,180]]
     }).addTo(map);
 
     tileLayer.on('tileerror', function(e) {
