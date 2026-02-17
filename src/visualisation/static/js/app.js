@@ -4,33 +4,73 @@ let layerRoutes = null;
 const state = {
     depart: { id: '', nom: '' },
     arrivee: { id: '', nom: '' },
-    villes: {}
+    villes: {},
+    vehicles: [],
+    vehiclesByBrand: {},
+    fuelPrices: { essence: 1.60, diesel: 1.50 },
+    selectedVehicle: null
 };
 
 document.addEventListener('DOMContentLoaded', () => {
     initMap();
     initEventListeners();
     loadVillesData();
+    loadVehiclesData();
+    loadFuelPrices();
+    handleUrlParameters();
 });
 
 function initMap() {
     map = L.map('map', {
-        doubleClickZoom: false
+        doubleClickZoom: false,
+        preferCanvas: false,
+        zoomAnimation: true,
+        fadeAnimation: true,
+        markerZoomAnimation: true
     }).setView([43.6045, 1.4442], 7);
 
-    window.map = map;  // Exposer sur window pour les Easter eggs
+    window.map = map;
     
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 19,
-        minZoom: 6
+    const tileLayer = L.tileLayer('https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 20,
+        minZoom: 6,
+        errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+        keepBuffer: 2,
+        updateWhenIdle: false,
+        updateInterval: 50
     }).addTo(map);
+
+    tileLayer.on('tileerror', function(e) {
+        console.warn('Erreur de chargement de tuile:', e);
+    });
 
     layerMarkers = L.layerGroup().addTo(map);
     layerRoutes = L.layerGroup().addTo(map);
-    window.layerRoutes = layerRoutes;  // Exposer aussi layerRoutes
+    window.layerRoutes = layerRoutes;
 
-    // 🎬 Easter Egg Double-clic - Rick Roll
+    setTimeout(() => {
+        map.invalidateSize();
+        tileLayer.redraw();
+    }, 100);
+
+    map.on('zoomend', () => {
+        tileLayer.redraw();
+    });
+
+    map.on('moveend', () => {
+        setTimeout(() => {
+            tileLayer.redraw();
+        }, 50);
+    });
+
+    map.whenReady(() => {
+        setTimeout(() => {
+            map.invalidateSize();
+            tileLayer.redraw();
+        }, 200);
+    });
+
     map.on('dblclick', () => {
         if (typeof DoubleClickEasterEgg !== 'undefined') {
             DoubleClickEasterEgg.trigger();
@@ -47,11 +87,16 @@ function initEventListeners() {
 
     document.getElementById('btn-calcul').addEventListener('click', lancerCalcul);
 
+    initSidebarToggle();
+
     document.getElementById('btn-swap').addEventListener('click', inverserTrajet);
 
     document.getElementById('btn-theme').addEventListener('click', toggleTheme);
 
     document.getElementById('btn-geoloc').addEventListener('click', getUserLocation);
+
+    document.getElementById('brand-select').addEventListener('change', handleBrandChange);
+    document.getElementById('vehicle-select').addEventListener('change', handleVehicleChange);
 
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
@@ -74,6 +119,119 @@ async function loadVillesData() {
         console.log(`Villes chargées: ${Object.keys(villes).length}`);
     } catch (error) {
         console.error('Erreur lors du chargement des villes:', error);
+    }
+}
+
+async function loadVehiclesData() {
+    try {
+        const response = await fetch('/api/vehicles');
+        const vehicles = await response.json();
+        state.vehicles = vehicles;
+        populateBrandSelect(vehicles);
+        console.log(`Véhicules chargés: ${vehicles.length}`);
+    } catch (error) {
+        console.error('Erreur lors du chargement des véhicules:', error);
+    }
+}
+
+async function loadFuelPrices() {
+    try {
+        const response = await fetch('/api/fuel-prices');
+        const prices = await response.json();
+        state.fuelPrices = prices;
+        console.log('Prix du carburant chargés:', prices);
+    } catch (error) {
+        console.error('Erreur lors du chargement des prix du carburant:', error);
+    }
+}
+
+function populateBrandSelect(vehicles) {
+    const brandSelect = document.getElementById('brand-select');
+    
+    const brands = {};
+    vehicles.forEach(vehicle => {
+        if (!brands[vehicle.marque]) {
+            brands[vehicle.marque] = [];
+        }
+        brands[vehicle.marque].push(vehicle);
+    });
+    
+    const sortedBrands = Object.keys(brands).sort();
+    
+    brandSelect.innerHTML = '<option value="">Choisir une marque...</option>';
+    sortedBrands.forEach(brand => {
+        const option = document.createElement('option');
+        option.value = brand;
+        option.textContent = brand;
+        brandSelect.appendChild(option);
+    });
+    
+    state.vehiclesByBrand = brands;
+}
+
+function populateModelSelect(brand) {
+    const modelSelect = document.getElementById('vehicle-select');
+    const vehicleInfo = document.getElementById('vehicle-info');
+    
+    if (!brand) {
+        modelSelect.innerHTML = '<option value="">Choisir d\'abord une marque</option>';
+        modelSelect.disabled = true;
+        vehicleInfo.style.display = 'none';
+        return;
+    }
+    
+    const vehicles = state.vehiclesByBrand[brand];
+    if (!vehicles) return;
+    
+    const models = {};
+    vehicles.forEach(vehicle => {
+        if (!models[vehicle.modele]) {
+            models[vehicle.modele] = vehicle;
+        }
+    });
+    
+    const sortedModels = Object.keys(models).sort();
+    
+    modelSelect.innerHTML = '<option value="">Choisir un modèle...</option>';
+    sortedModels.forEach(modelName => {
+        const vehicle = models[modelName];
+        const option = document.createElement('option');
+        option.value = vehicle.id;
+        const fuelPrice = state.fuelPrices[vehicle.type_carburant] || 1.60;
+        option.textContent = `${modelName} (${vehicle.consommation}L/100km, ${vehicle.type_carburant} ~${fuelPrice.toFixed(2)}€/L)`;
+        modelSelect.appendChild(option);
+    });
+    
+    modelSelect.disabled = false;
+}
+
+function handleBrandChange() {
+    const brandSelect = document.getElementById('brand-select');
+    const selectedBrand = brandSelect.value;
+    
+    populateModelSelect(selectedBrand);
+    
+    state.selectedVehicle = null;
+    const vehicleInfo = document.getElementById('vehicle-info');
+    vehicleInfo.style.display = 'none';
+}
+
+function handleVehicleChange() {
+    const select = document.getElementById('vehicle-select');
+    const vehicleId = select.value;
+    const vehicleInfo = document.getElementById('vehicle-info');
+    const vehicleDetails = document.getElementById('vehicle-details');
+    
+    if (vehicleId) {
+        const vehicle = state.vehicles.find(v => v.id == vehicleId);
+        if (vehicle) {
+            state.selectedVehicle = vehicle;
+            vehicleDetails.textContent = `${vehicle.consommation}L/100km, ${vehicle.type_carburant}, ${vehicle.co2_g_per_km}g CO2/km`;
+            vehicleInfo.style.display = 'block';
+        }
+    } else {
+        state.selectedVehicle = null;
+        vehicleInfo.style.display = 'none';
     }
 }
 
@@ -115,9 +273,6 @@ function rechercherVille(type) {
     });
 }
 
-/**
- * Ferme les dropdowns de suggestions
- */
 function fermerSuggestions() {
     const suggestions = document.querySelectorAll('.suggestions-dropdown');
     suggestions.forEach(s => {
@@ -249,19 +404,23 @@ function afficherResultats(itineraire) {
     document.getElementById('res_dist').textContent = `${itineraire.distance.toFixed(1)} km`;
     document.getElementById('res_temps').textContent = itineraire.temps_formate;
     
-    // Calcul du coût estimé (1.60€/L, 6L/100km)
-    const consommation = 6; // L/100km
-    const prixLitre = 1.60; // €
+    const vehicle = state.selectedVehicle;
+    const consommation = vehicle ? vehicle.consommation : 6; // L/100km
+    const typeCarburant = vehicle ? vehicle.type_carburant : 'essence';
+    const prixLitre = state.fuelPrices[typeCarburant] || 1.60; // €/L
     const litres = (itineraire.distance / 100) * consommation;
     const cout = litres * prixLitre;
     document.getElementById('res_cout').textContent = `${cout.toFixed(2)} €`;
     
-    // Calcul des émissions CO2 (2.3 kg/L)
-    const co2ParLitre = 2.3; // kg CO2/L
+    const co2ParLitre = vehicle ? (vehicle.co2_g_per_km / vehicle.consommation) / 10 : 2.3; // kg CO2/L (convert from g/km to kg/L)
     const co2 = litres * co2ParLitre;
     document.getElementById('res_co2').textContent = `${co2.toFixed(1)} kg`;
     
-    // Détecter s'il y a une autoroute dans le trajet
+    const costNote = document.querySelector('.cost-note');
+    if (costNote) {
+        costNote.textContent = `(~${prixLitre.toFixed(2)}€/L; ${consommation}L/100km; ${co2ParLitre.toFixed(1)}kg/L)`;
+    }
+    
     const hasHighway = (itineraire.routes || []).some(route => route.autoroute);
     const distanceIcon = document.getElementById('distance-icon');
     const highwayIndicator = document.getElementById('highway-indicator');
@@ -278,7 +437,6 @@ function afficherResultats(itineraire) {
     
     resultatsDiv.style.display = 'block';
     
-    // Ajouter à l'historique
     if (mobileFeatures) {
         mobileFeatures.addToHistory(depart, arrivee, itineraire.distance.toFixed(1), itineraire.temps_formate);
     }
@@ -327,7 +485,6 @@ function tracerChemin(itineraire) {
         }
     });
     
-    // Ajouter les marqueurs pour les villes du chemin
     const villesMap = {};
     for (const [id, v] of Object.entries(villes)) {
         villesMap[id] = v;
@@ -363,11 +520,8 @@ function tracerChemin(itineraire) {
             marker.bindPopup(`<b>${v.nom}</b>`);
             marker.addTo(layerRoutes);
             
-            // 🎉 Easter Eggs pour certaines villes
             marker.on('click', (e) => {
-                // Fermer le popup Leaflet
                 map.closePopup();
-                // Déclencher l'Easter egg
                 console.log(`🎯 Clic sur marqueur: ${v.nom}`);
                 easterEggsManager.trigger(v.nom);
             });
@@ -378,7 +532,6 @@ function tracerChemin(itineraire) {
         }
     });
     
-    // Construire les bounds à partir des villes si pas de routes
     if (Object.keys(villes).length > 0) {
         const bounds = L.latLngBounds();
         Object.values(villes).forEach(v => {
@@ -487,7 +640,109 @@ function findNearestCity(lat, lon) {
     }
 }
 
-// Charger le thème au démarrage
+function handleUrlParameters() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const depart = urlParams.get('depart');
+    const arrivee = urlParams.get('arrivee');
+    
+    if (depart && arrivee) {
+        const checkDataLoaded = setInterval(() => {
+            if (Object.keys(state.villes).length > 0) {
+                clearInterval(checkDataLoaded);
+                
+                document.getElementById('depart_input').value = depart;
+                document.getElementById('arrivee_input').value = arrivee;
+                
+                rechercherVille('depart');
+                rechercherVille('arrivee');
+                
+                setTimeout(() => {
+                    lancerCalcul();
+                }, 500);
+            }
+        }, 100);
+    }
+}
+
+function initSidebarToggle() {
+    const sidebar = document.querySelector('.sidebar');
+    const sidebarToggleBtn = document.getElementById('sidebar-toggle');
+    const resultatsSection = document.getElementById('resultats');
+    
+    if (!sidebar || !sidebarToggleBtn) return;
+    
+    sidebar.classList.add('minimized');
+    
+    updateMinimizedRoute();
+    
+    sidebarToggleBtn.addEventListener('click', () => {
+        const wasMinimized = sidebar.classList.contains('minimized');
+        sidebar.classList.toggle('minimized');
+        const isNowMinimized = sidebar.classList.contains('minimized');
+        
+        updateMinimizedRoute();
+        adjustMapHeight();
+    });
+    
+    if (resultatsSection) {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                    const display = resultatsSection.style.display;
+                    if (display !== 'none') {
+                        setTimeout(() => {
+                            sidebar.classList.add('minimized');
+                            updateMinimizedRoute();
+                        }, 1500);
+                    }
+                }
+            });
+        });
+        
+        observer.observe(resultatsSection, {
+            attributes: true,
+            attributeFilter: ['style']
+        });
+    }
+    
+    const departInput = document.getElementById('depart_input');
+    const arriveeInput = document.getElementById('arrivee_input');
+    
+    if (departInput) departInput.addEventListener('input', updateMinimizedRoute);
+    if (arriveeInput) arriveeInput.addEventListener('input', updateMinimizedRoute);
+}
+
+function updateMinimizedRoute() {
+    const depart = document.getElementById('depart_input').value || 'Départ';
+    const arrivee = document.getElementById('arrivee_input').value || 'Arrivée';
+    
+    const minimizedDepart = document.getElementById('minimized-depart');
+    const minimizedArrivee = document.getElementById('minimized-arrivee');
+    const minimizedRoute = document.getElementById('minimized-route');
+    
+    if (minimizedDepart) minimizedDepart.textContent = depart;
+    if (minimizedArrivee) minimizedArrivee.textContent = arrivee;
+    
+    if (minimizedRoute) {
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar && sidebar.classList.contains('minimized')) {
+            minimizedRoute.style.display = 'block';
+        } else {
+            minimizedRoute.style.display = 'none';
+        }
+    }
+    
+    console.log('updateMinimizedRoute called:', { depart, arrivee, isMinimized: document.querySelector('.sidebar')?.classList.contains('minimized') });
+}
+
+function adjustMapHeight() {
+    const mapContainer = document.querySelector('.map-container');
+    if (mapContainer) {
+        mapContainer.style.height = '';
+        console.log('Map height reset to auto');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'light') {
