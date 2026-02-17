@@ -6,37 +6,6 @@ import gdown
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-SRC_DIR = os.path.dirname(CURRENT_DIR)
-ROOT_DIR = os.path.dirname(SRC_DIR)
-
-for path in [CURRENT_DIR, SRC_DIR]:
-    if path not in sys.path:
-        sys.path.insert(0, path)
-
-files_to_download = {
-    "ma_base.db": "1OzMLienVlDaFdBMMIDnMHRajlbuZtXtE",
-    "dico_final.json": "1NXsjXBL0Swzi3neALMYhbV0WVevtUclz",
-    "routes_ville_adj.json": "1HtQlshnmTJqQNsqez6PlL-kCjS634T_q",
-    "coords_villes.json": "1iO1zhnZjA1awWil7RSJzx3DpsOZuD9LT"
-}
-
-def download_data():
-    print("Verification des fichiers de données...")
-    for filename, drive_id in files_to_download.items():
-        destination = os.path.join(CURRENT_DIR, filename)
-        
-        if not os.path.exists(destination):
-            print(f"Téléchargement de {filename}...")
-            try:
-                gdown.download(id=drive_id, output=destination, quiet=False)
-            except Exception as e:
-                print(f"Erreur de téléchargement pour {filename}: {e}")
-        else:
-            print(f"{filename} est déjà présent.")
-
-download_data()
-
 try:
     from algorithms import calculer_itineraire
     from map import maping
