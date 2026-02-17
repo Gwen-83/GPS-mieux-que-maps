@@ -1,12 +1,16 @@
 from pathlib import Path
 import sqlite3
 import json
+import os
 
-CURRENT_DIR = Path(__file__).parent  # src/visualisation/services
-DB_FILE = CURRENT_DIR.parent.parent / "data" / "sqlite" / "routes.db"  # remonte correctement jusqu'à src/data/sqlite
-print("DB_FILE =", DB_FILE)
+CURRENT_DIR = Path(__file__).parent
+DB_FILE = CURRENT_DIR.parent / "ma_base.db" 
+
+print(f"Tentative d'accès à la DB sur : {DB_FILE}")
 
 def extraire_infos_itineraire(liste_villes):
+    if not DB_FILE.exists():
+        raise FileNotFoundError(f"La base de données est introuvable à l'emplacement : {DB_FILE}")
     conn = sqlite3.connect(DB_FILE)
     cur = conn.cursor()
     print("DB_FILE =", DB_FILE)
