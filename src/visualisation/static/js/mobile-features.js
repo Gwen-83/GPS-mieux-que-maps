@@ -50,6 +50,32 @@ class MobileFeatures {
                 if (e.target === overlay) overlay.style.display = 'none';
             });
         });
+
+        // Boutons du modal ajouter favoris
+        document.getElementById('btn-cancel-favorite')?.addEventListener('click', () => {
+            this.closeModal('add-favorite-modal');
+        });
+
+        document.getElementById('btn-confirm-favorite')?.addEventListener('click', () => {
+            const nom = document.getElementById('favorite-name').value.trim();
+            const depart = document.getElementById('favorite-depart').textContent;
+            const arrivee = document.getElementById('favorite-arrivee').textContent;
+            
+            if (!nom) {
+                showToast('Veuillez entrer un nom pour ce trajet', 'warning');
+                document.getElementById('favorite-name').focus();
+                return;
+            }
+            
+            this.addToFavorites(depart, arrivee, nom);
+        });
+
+        // Permettre Enter pour confirmer
+        document.getElementById('favorite-name')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('btn-confirm-favorite').click();
+            }
+        });
     }
 
     // ===== HISTORIQUE =====
@@ -197,10 +223,7 @@ class MobileFeatures {
         this.openModal('favorites-modal');
     }
 
-    addToFavorites(depart, arrivee) {
-        const nom = prompt(`Nommer ce trajet:\n${depart} → ${arrivee}`);
-        if (!nom || nom.trim() === '') return;
-
+    addToFavorites(depart, arrivee, nom) {
         const item = {
             id: Date.now(),
             nom: nom.trim(),
@@ -211,18 +234,35 @@ class MobileFeatures {
         this.favorites.push(item);
         this.saveToStorage('gps_favorites', this.favorites);
         showToast(`✅ "${nom}" ajouté aux favoris`, 'success');
+        this.closeModal('add-favorite-modal');
     }
 
     promptAddToFavorites() {
         const depart = document.getElementById('depart_input').value;
         const arrivee = document.getElementById('arrivee_input').value;
+        const distance = document.getElementById('res_dist').textContent;
+        const temps = document.getElementById('res_temps').textContent;
 
         if (!depart || !arrivee) {
             showToast('Veuillez calculer un itinéraire d\'abord', 'warning');
             return;
         }
 
-        this.addToFavorites(depart, arrivee);
+        // Remplir le modal avec les informations du trajet
+        document.getElementById('favorite-depart').textContent = depart;
+        document.getElementById('favorite-arrivee').textContent = arrivee;
+        document.getElementById('favorite-distance').textContent = distance;
+        document.getElementById('favorite-temps').textContent = temps;
+        
+        // Générer un nom par défaut
+        const defaultName = `${depart} → ${arrivee}`;
+        document.getElementById('favorite-name').value = defaultName;
+        
+        // Ouvrir le modal
+        this.openModal('add-favorite-modal');
+        
+        // Focus sur le champ nom
+        setTimeout(() => document.getElementById('favorite-name').focus(), 100);
     }
 
     loadRouteFromFavorite(id) {
@@ -270,20 +310,36 @@ class MobileFeatures {
             return;
         }
 
-        const text = `GPS du touriste:\n${depart} → ${arrivee}\nDistance: ${distance}\nTemps: ${temps}`;
+        // Créer un texte de partage détaillé
+        const shareText = `🚗 Itinéraire GPS du Touriste\n\n📍 ${depart} → ${arrivee}\n📏 Distance: ${distance}\n⏱️ Temps: ${temps}\n\nCalculé avec l'algorithme A*`;
+
+        // URL générique pour permettre le partage vers plus d'apps
+        const shareUrl = `https://gps-touriste.app/?depart=${encodeURIComponent(depart)}&arrivee=${encodeURIComponent(arrivee)}`;
 
         if (navigator.share) {
             navigator.share({
-                title: 'Itinéraire GPS',
-                text: text,
-                url: window.location.href
-            }).catch(err => console.log('Erreur partage:', err));
-        } else {
-            // Fallback: copier dans le presse-papier
-            navigator.clipboard.writeText(text).then(() => {
-                showToast('Itinéraire copié', 'success');
+                title: `Itinéraire: ${depart} → ${arrivee}`,
+                text: shareText,
+                url: shareUrl
+            }).catch(err => {
+                console.log('Erreur partage natif:', err);
+                this.fallbackShare(shareText, shareUrl);
             });
+        } else {
+            this.fallbackShare(shareText, shareUrl);
         }
+    }
+
+    fallbackShare(text, url = null) {
+        // Fallback: copier dans le presse-papier
+        const fullText = url ? `${text}\n\n🔗 ${url}` : text;
+        navigator.clipboard.writeText(fullText).then(() => {
+            showToast('Itinéraire copié dans le presse-papier', 'success');
+        }).catch(() => {
+            // Si clipboard échoue, afficher le texte
+            showToast('Partage non supporté, voici le texte:', 'info');
+            console.log('Texte à partager:', fullText);
+        });
     }
 
     // ===== UTILITAIRES =====
@@ -295,11 +351,19 @@ class MobileFeatures {
     }
 
     openModal(modalId) {
-        document.getElementById(modalId).style.display = 'flex';
+        const modal = document.getElementById(modalId);
+        modal.style.display = 'flex';
+        
+        // Centrer le modal d'ajout de favoris
+        if (modalId === 'add-favorite-modal') {
+            modal.classList.add('centered');
+        }
     }
 
     closeModal(modalId) {
-        document.getElementById(modalId).style.display = 'none';
+        const modal = document.getElementById(modalId);
+        modal.style.display = 'none';
+        modal.classList.remove('centered');
     }
 
     saveToStorage(key, data) {
